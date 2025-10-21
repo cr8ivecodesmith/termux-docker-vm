@@ -2,11 +2,10 @@
 set -euo pipefail
 
 # --- Config (keep in sync with start script) ---
-VM_DIR="${VM_DIR:-$HOME/VirtualMachines}"
-DOCKER_VM="${DOCKER_VM:-$VM_DIR/Docker}"
-PIDFILE="$DOCKER_VM/qemu.pid"
-LOCKFILE="$DOCKER_VM/.docker-vm.lock"
-MONITOR_SOCK="$DOCKER_VM/monitor.sock"
+WS="${WS:-$HOME/.tmp/vm-docker}"
+PIDFILE="$WS/qemu.pid"
+LOCKFILE="$WS/.docker-vm.lock"
+MONITOR_SOCK="$WS/monitor.sock"
 
 # Helper: is process running?
 is_running() {
@@ -27,7 +26,7 @@ fi
 
 if [[ -z "$PID" ]]; then
   # Last resort: find any qemu using the Docker VM directory (best-effort)
-  PID="$(pgrep -f "qemu-system-.*$DOCKER_VM" || true)"
+  PID="$(pgrep -f "qemu-system-.*$WS" || true)"
 fi
 
 if [[ -z "$PID" ]] || ! is_running "$PID"; then

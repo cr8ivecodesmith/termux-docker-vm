@@ -8,18 +8,26 @@
 bash setup.sh
 ```
 
-2\. In the VM, perform initial setup
+Once booted into the VM shell, login as `root` with no password.
+
+In the terminal, setup networking:
 
 ```shell
-wget https://raw.githubusercontent.com/cr8ivecodesmith/termux-docker-vm/refs/heads/main/setup-01-init.sh
+setup-interfaces
 ```
 
 ```shell
-chmod +x setup-01-init.sh
+ifup eth0
+```
+
+Then perform initial setup:
+
+```shell
+wget https://raw.githubusercontent.com/cr8ivecodesmith/termux-docker-vm/refs/heads/main/answerfile
 ```
 
 ```shell
-./setup-01-init.sh
+setup-alpine -f answerfile
 ```
 
 When done, shutdown the VM
@@ -34,18 +42,32 @@ poweroff
 bash first-boot.sh
 ```
 
-5\. In the VM, install docker
+In the VM, install docker
 
 ```shell
-wget https://raw.githubusercontent.com/cr8ivecodesmith/termux-docker-vm/refs/heads/main/setup-02-docker.sh
+wget https://raw.githubusercontent.com/cr8ivecodesmith/termux-docker-vm/refs/heads/main/setup-docker.sh
 ```
 
 ```shell
-chmod +x setup-02-docker.sh
+chmod +x setup-docker.sh
 ```
 
 ```shell
-./setup-02-docker.sh
+./setup-docker.sh
+```
+
+Then add your Termux ssh public key in the authorized keys:
+
+In Termux:
+
+```shell
+cat ~/.ssh/<key>.pub
+```
+
+In VM:
+
+```shell
+echo "<public key>" >> ~/.ssh/authorized_keys
 ```
 
 When done, shutdown the VM
@@ -67,6 +89,9 @@ or stop with:
 ```shell
 vm-docker-stop
 ```
+
+7\. Install the Docker client
+
 
 ## References
 

@@ -2,19 +2,18 @@
 set -euo pipefail
 
 # --- Config ---
-VM_DIR="${VM_DIR:-$HOME/VirtualMachines}"
-DOCKER_VM="${DOCKER_VM:-$VM_DIR/Docker}"
+WS="${WS:-$HOME/.tmp/vm-docker}"
 MEM="${MEM:-4096}"
 CPUS="${CPUS:-4}"
 FIRMWARE="${FIRMWARE:-$PREFIX/share/qemu/edk2-x86_64-code.fd}"   # Termux path
-DISK_IMG="${DISK_IMG:-$DOCKER_VM/disk.img}"
+DISK_IMG="${DISK_IMG:-$HOME/VirtualMachines/Docker/disk.img}"
 
 # Runtime files
-PIDFILE="$DOCKER_VM/qemu.pid"
-LOCKFILE="$DOCKER_VM/.docker-vm.lock"
-MONITOR_SOCK="$DOCKER_VM/monitor.sock"
+PIDFILE="$WS/qemu.pid"
+LOCKFILE="$WS/.docker-vm.lock"
+MONITOR_SOCK="$WS/monitor.sock"
 
-mkdir -p "$DOCKER_VM"
+mkdir -p "$WS"
 
 # --- Safety checks ---
 command -v qemu-system-x86_64 >/dev/null 2>&1 || {
@@ -50,7 +49,6 @@ qemu-system-x86_64 \
   -drive if=pflash,format=raw,read-only=on,file="$FIRMWARE" \
   -netdev user,id=n1,dns=8.8.8.8,hostfwd=tcp::2222-:22 \
   -device virtio-net,netdev=n1 \
-  -nographic \
   -daemonize \
   -pidfile "$PIDFILE" \
   -monitor "unix:$MONITOR_SOCK,server,nowait" \

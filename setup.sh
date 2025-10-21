@@ -10,8 +10,7 @@ MEM=2048
 CPUS=4
 
 mkdir -p $HOME/.local/bin
-ln -sn $DOCKER_VM/vm-docker-start $HOME/.local/bin/
-ln -sn $DOCKER_VM/vm-docker-stop $HOME/.local/bin/
+cp $DOCKER_VM/vm-docker-st* $HOME/.local/bin/
 
 pkg install qemu-utils qemu-common qemu-system-x86_64-headless wget -y
 
