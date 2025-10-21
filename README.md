@@ -2,7 +2,13 @@
 
 ## Steps
 
-1\. In Termux, run the setup file
+**1\. Clone this repo**
+
+```shell
+git clone https://github.com/cr8ivecodesmith/termux-docker-vm.git
+```
+
+**2\. In Termux, run the setup file**(
 
 ```shell
 bash setup.sh
@@ -36,7 +42,7 @@ When done, shutdown the VM
 poweroff
 ```
 
-3\. Back in Termux, boot the VM again
+**3\. Back in Termux, boot the VM again**
 
 ```shell
 bash first-boot.sh
@@ -76,7 +82,7 @@ When done, shutdown the VM
 poweroff
 ```
 
-6\. Start or Stop the VM
+**4\. Start or Stop the VM**
 
 Start the VM with:
 
@@ -90,7 +96,7 @@ or stop with:
 vm-docker-stop
 ```
 
-7\. Install the Docker client
+**5\. Install the Docker client**
 
 You can run this script under proot:
 
@@ -120,7 +126,7 @@ proot-distro login --user "matt" "ubuntu" --shared-tmp --work-dir "$PWD" --termu
 
 Then you can just add an alias from your Termux shell to shorten the command.
 
-8\. Update the Docker client context to use the VM
+**6\. Update the Docker client context to use the VM**
 
 Add the VM in your ssh config:
 
