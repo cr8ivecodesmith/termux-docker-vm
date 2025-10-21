@@ -92,7 +92,63 @@ vm-docker-stop
 
 7\. Install the Docker client
 
+You can run this script under proot:
+
+For example, if you have a proot named "ubuntu" with a user named "matt"
+
+```shell
+proot-distro login --user "matt" "ubuntu" --shared-tmp --work-dir "$PWD" --termux-home
+```
+
+Then from within the proot shell:
+
+```shell
+./proot-docker-client-install.sh
+```
+
+Or as single command from Termux:
+
+```shell
+proot-distro login --user "matt" "ubuntu" --shared-tmp --work-dir "$PWD" --termux-home -- bash proot-docker-client-install.sh
+```
+
+Then from Termux you can run:
+
+```shell
+proot-distro login --user "matt" "ubuntu" --shared-tmp --work-dir "$PWD" --termux-home -- docker --help
+```
+
+Then you can just add an alias from your Termux shell to shorten the command.
+
+8\. Update the Docker client context to use the VM
+
+Add the VM in your ssh config:
+
+```shell
+echo "
+# Docker VM host
+Host vm-docker
+  HostName 127.0.0.1
+  Port 2222
+  User root
+" >> ~/.ssh/config
+```
+
+Create a new docker context:
+
+```shell
+docker context create vm-docker --docker "host=ssh://vm-docker"
+```
+
+When the VM is running, you can set the docker client context to use it:
+
+```shell
+docker context use vm-docker
+```
+
 
 ## References
 
 - https://github.com/cyberkernelofficial/docker-in-termux
+- https://docs.docker.com/engine/install/ubuntu/
+
