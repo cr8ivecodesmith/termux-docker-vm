@@ -1,0 +1,69 @@
+#!/data/data/com.termux/files/usr/bin/bash
+set -euo pipefail
+
+# --- Config ---
+VM_DIR="${VM_DIR:-$HOME/VirtualMachines}"
+DOCKER_VM="${DOCKER_VM:-$VM_DIR/Docker}"
+MEM="${MEM:-4096}"
+CPUS="${CPUS:-4}"
+FIRMWARE="${FIRMWARE:-$PREFIX/share/qemu/edk2-x86_64-code.fd}"   # Termux path
+DISK_IMG="${DISK_IMG:-$DOCKER_VM/disk.img}"
+
+# Runtime files
+PIDFILE="$DOCKER_VM/qemu.pid"
+LOCKFILE="$DOCKER_VM/.docker-vm.lock"
+MONITOR_SOCK="$DOCKER_VM/monitor.sock"
+
+mkdir -p "$DOCKER_VM"
+
+# --- Safety checks ---
+command -v qemu-system-x86_64 >/dev/null 2>&1 || {
+  echo "qemu-system-x86_64 not found. Install QEMU first." >&2
+  exit 1
+}
+[[ -f "$FIRMWARE" ]] || { echo "UEFI firmware not found at: $FIRMWARE" >&2; exit 1; }
+[[ -f "$DISK_IMG" ]] || { echo "Disk image not found at: $DISK_IMG" >&2; exit 1; }
+
+# If already running, bail out early
+if [[ -f "$PIDFILE" ]] && ps -p "$(cat "$PIDFILE" 2>/dev/null)" >/dev/null 2>&1; then
+  echo "Docker VM appears to be running (PID $(cat "$PIDFILE"))."
+  exit 0
+fi
+
+# Remove any stale runtime files
+rm -f "$PIDFILE" "$LOCKFILE" "$MONITOR_SOCK"
+
+# --- Launch ---
+# NOTE: This keeps your original args and adds:
+#   -daemonize (background)
+#   -pidfile (write PID)
+#   -monitor unix:... (let the stop script do graceful shutdown)
+#
+# If your QEMU build doesn’t accept a bare disk path, replace the
+# trailing “$DISK_IMG” with:
+#   -drive file="$DISK_IMG",if=virtio,format=raw
+qemu-system-x86_64 \
+  -machine q35 \
+  -m "$MEM" \
+  -smp "cpus=$CPUS" \
+  -cpu qemu64 \
+  -drive if=pflash,format=raw,read-only=on,file="$FIRMWARE" \
+  -netdev user,id=n1,dns=8.8.8.8,hostfwd=tcp::2222-:22 \
+  -device virtio-net,netdev=n1 \
+  -nographic \
+  -daemonize \
+  -pidfile "$PIDFILE" \
+  -monitor "unix:$MONITOR_SOCK,server,nowait" \
+  "$DISK_IMG"
+
+# Create a simple lock/metadata file
+{
+  echo "pid=$(cat "$PIDFILE")"
+  echo "started=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+  echo "disk=$DISK_IMG"
+  echo "monitor=$MONITOR_SOCK"
+} > "$LOCKFILE"
+
+echo "Docker VM started. PID $(cat "$PIDFILE")."
+echo "Lock: $LOCKFILE"
+

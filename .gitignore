@@ -1,0 +1,58 @@
+# --- QEMU / VM runtime files ---
+*.pid
+*.lock
+*.sock
+*.log
+*.tmp
+*.bak
+*.swp
+*.swo
+
+# PID and lock files created by vm-docker-start
+.qemu.pid
+.docker-vm.lock
+monitor.sock
+
+# --- Virtual machine disks ---
+*.img
+*.qcow2
+*.vmdk
+*.vdi
+*.raw
+*.iso
+
+# --- Build artifacts / caches ---
+*.o
+*.out
+*.a
+*.so
+*.dll
+*.exe
+
+# --- Common directories for VM data ---
+/VirtualMachines/
+/VMs/
+/Docker/
+
+# --- Editor / IDE noise ---
+.vscode/
+.idea/
+*.iml
+.DS_Store
+Thumbs.db
+
+# --- Shell history / user data ---
+*.history
+*.log.old
+nohup.out
+
+# --- Backup or generated scripts ---
+*~
+*.orig
+*.rej
+
+# --- Environment / local overrides ---
+.env
+.env.local
+local.conf
+config.local

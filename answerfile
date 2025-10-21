@@ -1,0 +1,22 @@
+KEYMAPOPTS="us us"
+
+HOSTNAMEOPTS="-n alpine"
+INTERFACESOPTS="auto lo
+iface lo inet loopback
+
+auto eth0
+iface eth0 inet dhcp
+    hostname alpine
+"
+TIMEZONEOPTS="-z UTC"
+PROXYOPTS="none"
+
+ALPINE_VER=3.22
+ALPINE_MAIN=http://dl-cdn.alpinelinux.org/alpine/v$ALPINE_VER/main
+ALPINE_COMMUNITY=http://dl-cdn.alpinelinux.org/alpine/v$ALPINE_VER/community
+APKREPOSOPTS="$ALPINE_MAIN $ALPINE_COMMUNITY"
+
+SSHDOPTS="-c dropbear"
+NTPOPTS="-c busybox"
+
+DISKOPTS="-v -m sys -s 0 /dev/sda"

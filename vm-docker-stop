@@ -1,0 +1,89 @@
+#!/data/data/com.termux/files/usr/bin/bash
+set -euo pipefail
+
+# --- Config (keep in sync with start script) ---
+VM_DIR="${VM_DIR:-$HOME/VirtualMachines}"
+DOCKER_VM="${DOCKER_VM:-$VM_DIR/Docker}"
+PIDFILE="$DOCKER_VM/qemu.pid"
+LOCKFILE="$DOCKER_VM/.docker-vm.lock"
+MONITOR_SOCK="$DOCKER_VM/monitor.sock"
+
+# Helper: is process running?
+is_running() {
+  local pid="$1"
+  [[ -n "$pid" ]] && ps -p "$pid" >/dev/null 2>&1
+}
+
+# Try to read PID (or discover by image path)
+PID=""
+if [[ -f "$PIDFILE" ]]; then
+  PID="$(cat "$PIDFILE" 2>/dev/null || true)"
+fi
+
+# If no PID found, try to infer from lock file or pgrep as last resort
+if [[ -z "$PID" ]] && [[ -f "$LOCKFILE" ]]; then
+  PID="$(grep -E '^pid=' "$LOCKFILE" | sed 's/^pid=//')"
+fi
+
+if [[ -z "$PID" ]]; then
+  # Last resort: find any qemu using the Docker VM directory (best-effort)
+  PID="$(pgrep -f "qemu-system-.*$DOCKER_VM" || true)"
+fi
+
+if [[ -z "$PID" ]] || ! is_running "$PID"; then
+  echo "No running Docker VM found."
+  # Clean up stale files if any
+  rm -f "$PIDFILE" "$LOCKFILE" "$MONITOR_SOCK"
+  exit 0
+fi
+
+echo "Stopping Docker VM (PID $PID)..."
+
+# 1) Try graceful ACPI shutdown via QEMU monitor, if available
+graceful_sent=false
+if [[ -S "$MONITOR_SOCK" ]]; then
+  # Prefer socat, else netcat with UNIX sockets if available
+  if command -v socat >/dev/null 2>&1; then
+    printf 'system_powerdown\n' | socat - UNIX-CONNECT:"$MONITOR_SOCK" || true
+    graceful_sent=true
+  elif nc -h 2>&1 | grep -q -- '-U'; then
+    # BusyBox/Netcat w/ UNIX socket support
+    { printf 'system_powerdown\n' ; sleep 0.2; } | nc -U "$MONITOR_SOCK" || true
+    graceful_sent=true
+  fi
+fi
+
+# 2) Wait up to 30s for graceful shutdown
+if $graceful_sent; then
+  for i in $(seq 1 30); do
+    if ! is_running "$PID"; then
+      break
+    fi
+    sleep 1
+  done
+fi
+
+# 3) If still running, nudge with SIGTERM, then SIGKILL as last resort
+if is_running "$PID"; then
+  kill -TERM "$PID" 2>/dev/null || true
+  for i in $(seq 1 10); do
+    is_running "$PID" || break
+    sleep 1
+  done
+fi
+
+if is_running "$PID"; then
+  echo "Forcing shutdown (SIGKILL)..."
+  kill -KILL "$PID" 2>/dev/null || true
+fi
+
+# Cleanup
+rm -f "$PIDFILE" "$LOCKFILE" "$MONITOR_SOCK"
+
+if is_running "$PID"; then
+  echo "Failed to stop the Docker VM (PID $PID)." >&2
+  exit 1
+else
+  echo "Docker VM stopped."
+fi
+
