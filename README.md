@@ -2,23 +2,23 @@
 
 ## Steps
 
-\1. In Termux, run the setup file
+1\. In Termux, run the setup file
 
 ```shell
 bash setup.sh
 ```
 
-\2. Then run first boot script to enter the VM for the first time
+2\. In the VM, perform initial setup
 
 ```shell
-bash first-boot.sh
+wget https://raw.githubusercontent.com/cr8ivecodesmith/termux-docker-vm/refs/heads/main/setup-01-init.sh
 ```
 
-\3. In the VM, perform initial setup
+```shell
+chmod +x setup-01-init.sh
+```
 
 ```shell
-wget https://raw.githubusercontent.com/cr8ivecodesmith/termux-docker-vm/main/setup-01-init.sh
-chmod +x setup-01-init.sh
 ./setup-01-init.sh
 ```
 
@@ -28,17 +28,23 @@ When done, shutdown the VM
 poweroff
 ```
 
-\4. Back in Termux, boot the VM again
+3\. Back in Termux, boot the VM again
 
 ```shell
 bash first-boot.sh
 ```
 
-\5. In the VM, install docker
+5\. In the VM, install docker
 
 ```shell
-wget https://raw.githubusercontent.com/cr8ivecodesmith/termux-docker-vm/main/setup-02-docker.sh
+wget https://raw.githubusercontent.com/cr8ivecodesmith/termux-docker-vm/refs/heads/main/setup-02-docker.sh
+```
+
+```shell
 chmod +x setup-02-docker.sh
+```
+
+```shell
 ./setup-02-docker.sh
 ```
 
@@ -48,7 +54,7 @@ When done, shutdown the VM
 poweroff
 ```
 
-\6. Start or Stop the VM
+6\. Start or Stop the VM
 
 Start the VM with:
 
